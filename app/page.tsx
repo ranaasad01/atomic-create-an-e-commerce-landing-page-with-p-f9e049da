@@ -132,84 +132,82 @@ const testimonials = [
     name: "Theo Nakamura",
     location: "Brooklyn, NY",
     rating: 5,
-    text: "I've bought furniture from a dozen places online. Nothing compares to the quality of the walnut table. Solid, beautiful, and the finish is flawless.",
-    product: "Walnut Side Table",
-    avatar: "https://i.scdn.co/image/ab67616d00001e0269e7e306e623b22f1aad772d",
+    text: "I've been searching for a linen blanket that actually feels luxurious without being fussy. This is it. The weight is perfect and it photographs beautifully.",
+    product: "Linen Throw Blanket",
+    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face",
   },
   {
     id: "t3",
     name: "Sofia Reyes",
     location: "Austin, TX",
     rating: 5,
-    text: "Lumière has completely changed how I think about decorating. Every piece feels intentional. The linen blanket is my most-used item in the house.",
-    product: "Linen Throw Blanket",
-    avatar: "https://www.bmi.com/images/news/2023/_770/Latin-Spotlight-Sofia-Reyes.jpg",
+    text: "The walnut side table is a work of art. Solid, beautifully finished, and the joinery is immaculate. Worth every penny and then some.",
+    product: "Walnut Side Table",
+    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=80&h=80&fit=crop&crop=face",
   },
 ];
 
-const valueProps = [
-  {
-    icon: Truck,
-    title: "Free Shipping Over $150",
-    description: "Complimentary delivery on all orders above $150. Express options available at checkout.",
-  },
-  {
-    icon: RefreshCw,
-    title: "30-Day Returns",
-    description: "Not in love with your purchase? Return it within 30 days for a full refund, no questions asked.",
-  },
-  {
-    icon: Shield,
-    title: "Lifetime Guarantee",
-    description: "Every piece is backed by our craftsmanship guarantee. We stand behind what we sell.",
-  },
-  {
-    icon: Heart,
-    title: "Ethically Sourced",
-    description: "We partner only with makers who pay fair wages and use sustainable materials.",
-  },
+const categories = ["All", "Home Decor", "Textiles", "Furniture", "Lighting", "Kitchen"];
+
+const perks = [
+  { icon: Truck, title: "Free Shipping", desc: "On all orders over $75" },
+  { icon: RefreshCw, title: "Easy Returns", desc: "30-day hassle-free returns" },
+  { icon: Shield, title: "Secure Checkout", desc: "256-bit SSL encryption" },
+  { icon: Check, title: "Quality Guarantee", desc: "Curated for lasting quality" },
 ];
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
-const badgeColors: Record<string, string> = {
-  "Best Seller": "bg-amber-100 text-amber-800",
-  New: "bg-indigo-100 text-indigo-700",
-  Sale: "bg-rose-100 text-rose-700",
-};
-
-function StarRating({ rating, count }: { rating: number; count: number }) {
+function StarRating({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) {
   return (
-    <div className="flex items-center gap-1.5">
-      <div className="flex items-center gap-0.5">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Star
-            key={i}
-            className={`w-3.5 h-3.5 ${
-              i < Math.floor(rating)
-                ? "fill-amber-400 text-amber-400"
-                : "fill-slate-200 text-slate-200"
-            }`}
-          />
-        ))}
-      </div>
-      <span className="text-xs text-slate-500">
-        {rating.toFixed(1)} ({count})
-      </span>
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          className={`${
+            size === "sm" ? "w-3.5 h-3.5" : "w-4 h-4"
+          } ${
+            star <= Math.round(rating)
+              ? "fill-amber-400 text-amber-400"
+              : "fill-slate-200 text-slate-200"
+          }`}
+        />
+      ))}
     </div>
   );
 }
 
-const cardHover: Variants = {
-  rest: { y: 0, boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px -4px rgba(0,0,0,0.08)" },
-  hover: { y: -6, boxShadow: "0 4px 8px rgba(0,0,0,0.06), 0 20px 40px -12px rgba(0,0,0,0.16)" },
-};
+function BadgePill({ label }: { label: string }) {
+  const colorMap: Record<string, string> = {
+    "Best Seller": "bg-amber-100 text-amber-800",
+    New: "bg-emerald-100 text-emerald-800",
+    Sale: "bg-rose-100 text-rose-800",
+  };
+  return (
+    <span
+      className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold tracking-wide ${
+        colorMap[label] ?? "bg-slate-100 text-slate-700"
+      }`}
+    >
+      {label}
+    </span>
+  );
+}
 
-function ProductCard({ product }: { product: Product }) {
-  const [wished, setWished] = useState(false);
+function ProductCard({
+  product,
+  onAddToCart,
+  onQuickView,
+}: {
+  product: Product;
+  onAddToCart: (p: Product) => void;
+  onQuickView: (p: Product) => void;
+}) {
+  const [wishlisted, setWishlisted] = useState(false);
   const [added, setAdded] = useState(false);
 
   const handleAdd = () => {
+    onAddToCart(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
@@ -217,366 +215,414 @@ function ProductCard({ product }: { product: Product }) {
   return (
     <motion.div
       variants={scaleIn}
-      initial="rest"
-      whileHover="hover"
-      animate="rest"
-      custom={cardHover}
-      className="group bg-white rounded-2xl overflow-hidden border border-black/5 cursor-pointer"
-      style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.04), 0 4px 12px -4px rgba(0,0,0,0.08)" }}
+      className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col"
     >
       {/* Image */}
-      <div className="relative overflow-hidden bg-slate-50 aspect-[4/3]">
-        <motion.img
+      <div className="relative overflow-hidden bg-stone-100 aspect-[4/3]">
+        <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           onError={(e) => {
             (e.currentTarget as HTMLImageElement).src =
-              "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80";
+              "https://placehold.co/400x300/f1f5f9/94a3b8?text=Image";
           }}
         />
-        {product.badge && (
-          <span
-            className={`absolute top-3 left-3 text-xs font-semibold px-2.5 py-1 rounded-full ${
-              badgeColors[product.badge] ?? "bg-slate-100 text-slate-700"
-            }`}
-          >
-            {product.badge}
-          </span>
-        )}
+        {/* Overlay actions */}
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
         <button
-          onClick={() => setWished((w) => !w)}
-          aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95"
+          onClick={() => setWishlisted((w) => !w)}
+          aria-label="Wishlist"
+          className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:scale-110 active:scale-95"
         >
           <Heart
-            className={`w-4 h-4 transition-colors duration-200 ${
-              wished ? "fill-rose-500 text-rose-500" : "text-slate-400"
+            className={`w-4 h-4 ${
+              wishlisted ? "fill-rose-500 text-rose-500" : "text-slate-500"
             }`}
           />
         </button>
+        <button
+          onClick={() => onQuickView(product)}
+          className="absolute bottom-3 left-1/2 -translate-x-1/2 px-4 py-1.5 bg-white/95 backdrop-blur-sm text-slate-800 text-xs font-semibold rounded-full shadow-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-200 whitespace-nowrap"
+        >
+          Quick View
+        </button>
+        {product.badge && (
+          <div className="absolute top-3 left-3">
+            <BadgePill label={product.badge} />
+          </div>
+        )}
       </div>
 
-      {/* Content */}
-      <div className="p-4">
-        <p className="text-xs font-medium text-indigo-600 uppercase tracking-wider mb-1">
+      {/* Info */}
+      <div className="p-4 flex flex-col flex-1">
+        <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
           {product.category}
         </p>
         <h3 className="text-sm font-semibold text-slate-900 mb-1 leading-snug">
           {product.name}
         </h3>
-        <p className="text-xs text-slate-500 leading-relaxed mb-3 line-clamp-2">
-          {product.description}
-        </p>
-        <StarRating rating={product.rating} count={product.reviewCount} />
-
-        <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100">
-          <div className="flex items-baseline gap-2">
-            <span className="text-base font-bold text-slate-900">
-              ${product.price}
-            </span>
-            {product.originalPrice != null && (
-              <span className="text-sm text-slate-400 line-through">
-                ${product.originalPrice}
-              </span>
-            )}
-          </div>
-          <motion.button
-            onClick={handleAdd}
-            whileTap={{ scale: 0.93 }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all duration-200 ${
-              added
-                ? "bg-emerald-500 text-white"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
-            }`}
-          >
-            {added ? (
-              <>
-                <Check className="w-3.5 h-3.5" /> Added
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-3.5 h-3.5" /> Add
-              </>
-            )}
-          </motion.button>
+        <div className="flex items-center gap-1.5 mb-3">
+          <StarRating rating={product.rating} />
+          <span className="text-xs text-slate-400">({product.reviewCount})</span>
         </div>
+        <div className="flex items-center gap-2 mb-4 mt-auto">
+          <span className="text-base font-bold text-slate-900">${product.price}</span>
+          {product.originalPrice && (
+            <span className="text-sm text-slate-400 line-through">${product.originalPrice}</span>
+          )}
+        </div>
+        <button
+          onClick={handleAdd}
+          className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+            added
+              ? "bg-emerald-500 text-white"
+              : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
+          }`}
+        >
+          {added ? (
+            <><Check className="w-4 h-4" /> Added!</>
+          ) : (
+            <><ShoppingBag className="w-4 h-4" /> Add to Cart</>
+          )}
+        </button>
       </div>
     </motion.div>
   );
 }
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
+function QuickViewModal({
+  product,
+  onClose,
+  onAddToCart,
+}: {
+  product: Product;
+  onClose: () => void;
+  onAddToCart: (p: Product) => void;
+}) {
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    onAddToCart(product);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.92, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.92, y: 16 }}
+        transition={{ duration: 0.25, ease: "easeOut" }}
+        className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative aspect-video bg-stone-100">
+          <img
+            src={product.image}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.currentTarget as HTMLImageElement).src =
+                "https://placehold.co/600x400/f1f5f9/94a3b8?text=Image";
+            }}
+          />
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:bg-white transition-colors"
+            aria-label="Close"
+          >
+            <span className="text-slate-600 text-lg leading-none">&times;</span>
+          </button>
+          {product.badge && (
+            <div className="absolute top-3 left-3">
+              <BadgePill label={product.badge} />
+            </div>
+          )}
+        </div>
+        <div className="p-6">
+          <p className="text-xs text-slate-400 font-medium uppercase tracking-wider mb-1">
+            {product.category}
+          </p>
+          <h2 className="text-xl font-bold text-slate-900 mb-2">{product.name}</h2>
+          <div className="flex items-center gap-2 mb-3">
+            <StarRating rating={product.rating} size="md" />
+            <span className="text-sm text-slate-500">{product.rating} · {product.reviewCount} reviews</span>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed mb-4">{product.description}</p>
+          <div className="flex items-center gap-3 mb-5">
+            <span className="text-2xl font-bold text-slate-900">${product.price}</span>
+            {product.originalPrice && (
+              <span className="text-base text-slate-400 line-through">${product.originalPrice}</span>
+            )}
+          </div>
+          <button
+            onClick={handleAdd}
+            className={`w-full py-3 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
+              added
+                ? "bg-emerald-500 text-white"
+                : "bg-indigo-600 hover:bg-indigo-700 text-white active:scale-95"
+            }`}
+          >
+            {added ? (
+              <><Check className="w-4 h-4" /> Added to Cart!</>
+            ) : (
+              <><ShoppingBag className="w-4 h-4" /> Add to Cart</>
+            )}
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Page ────────────────────────────────────────────────────────────────────
 
 export default function HomePage() {
-  return (
-    <main className="overflow-x-hidden">
-      {/* ── Hero ─────────────────────────────────────────────────────────── */}
-      <section className="relative min-h-[92vh] flex items-center bg-slate-50 overflow-hidden">
-        {/* Subtle radial glow */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 70% 60% at 60% 50%, rgba(99,102,241,0.08) 0%, transparent 70%)",
-          }}
-        />
-        {/* Faint grid texture */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.025]"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(0,0,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,1) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [cartCount, setCartCount] = useState(0);
+  const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
+  const [email, setEmail] = useState("");
+  const [subscribed, setSubscribed] = useState(false);
 
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-16 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left: copy */}
+  const filteredProducts =
+    activeCategory === "All"
+      ? products
+      : products.filter((p) => p.category === activeCategory);
+
+  const handleAddToCart = (p: Product) => {
+    setCartCount((c) => c + 1);
+  };
+
+  const handleSubscribe = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (email.trim()) {
+      setSubscribed(true);
+    }
+  };
+
+  return (
+    <>
+      {/* ── Promo Banner ── */}
+      <div className="bg-indigo-600 text-white text-center py-2.5 px-4 text-sm font-medium">
+        <span>✨ Free shipping on orders over $75 — </span>
+        <a href="#products" className="underline underline-offset-2 hover:text-indigo-200 transition-colors">
+          Shop now
+        </a>
+      </div>
+
+      {/* ── Hero ── */}
+      <section className="relative min-h-[92vh] flex items-center bg-gradient-to-br from-stone-50 via-white to-indigo-50 overflow-hidden pt-16">
+        {/* Decorative blobs */}
+        <div className="absolute top-1/4 right-0 w-[480px] h-[480px] bg-indigo-100/60 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-[320px] h-[320px] bg-amber-100/50 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3 pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+          {/* Left */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             animate="visible"
-            className="flex flex-col items-start"
           >
-            <motion.span
-              variants={fadeInUp}
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-semibold tracking-wide mb-6"
-            >
+            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-full text-indigo-700 text-xs font-semibold mb-6">
               <Sparkles className="w-3.5 h-3.5" />
-              {APP_TAGLINE}
-            </motion.span>
-
+              New arrivals for 2025
+            </motion.div>
             <motion.h1
               variants={fadeInUp}
-              className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.05] text-balance mb-6"
+              className="text-5xl sm:text-6xl lg:text-7xl font-bold text-slate-900 leading-[1.05] tracking-tight mb-6"
             >
               Objects worth
-              <br />
-              <span className="text-indigo-600">living with.</span>
+              <span className="block text-indigo-600">living with.</span>
             </motion.h1>
-
             <motion.p
               variants={fadeInUp}
-              className="text-lg text-slate-600 leading-relaxed max-w-md mb-8 text-pretty"
+              className="text-lg text-slate-500 leading-relaxed mb-8 max-w-md"
             >
-              {APP_NAME} brings together the world's finest independent makers.
-              Every piece is chosen for its craft, its story, and its ability to
-              make a home feel more like itself.
+              Thoughtfully designed pieces for modern homes. Each product is curated for quality, beauty, and lasting value.
             </motion.p>
-
-            <motion.div
-              variants={fadeInUp}
-              className="flex flex-wrap items-center gap-3"
-            >
-              <Link
+            <motion.div variants={fadeInUp} className="flex flex-wrap gap-3">
+              <a
                 href="#products"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .querySelector("#products")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-[0_2px_8px_rgba(99,102,241,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-sm shadow-indigo-200"
               >
                 Shop the Collection
                 <ArrowRight className="w-4 h-4" />
-              </Link>
-              <Link
-                href="#about"
-                onClick={(e) => {
-                  e.preventDefault();
-                  document
-                    .querySelector("#about")
-                    ?.scrollIntoView({ behavior: "smooth" });
-                }}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-700 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2"
+              </a>
+              <a
+                href="#collections"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-white text-slate-700 font-semibold rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 active:scale-95 transition-all duration-200"
               >
-                Our Story
-              </Link>
+                Browse Collections
+              </a>
             </motion.div>
 
-            <motion.div
-              variants={fadeInUp}
-              className="flex items-center gap-6 mt-10 pt-8 border-t border-slate-200 w-full"
-            >
-              {[
-                { value: "4,200+", label: "Happy customers" },
-                { value: "180+", label: "Curated pieces" },
-                { value: "4.9", label: "Average rating" },
-              ].map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-bold text-slate-900 tracking-tight">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs text-slate-500 mt-0.5">{stat.label}</p>
-                </div>
-              ))}
-            </motion.div>
-          </motion.div>
-
-          {/* Right: hero image mosaic */}
-          <motion.div
-            variants={slideInRight}
-            initial="hidden"
-            animate="visible"
-            className="relative hidden lg:grid grid-cols-2 gap-4"
-          >
-            <div className="space-y-4">
-              <div className="rounded-2xl overflow-hidden aspect-[3/4] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.18)]">
-                <img
-                  src="https://thearcshop.com/cdn/shop/products/the-arc-vintage-56_530x@2x.jpg?v=1617828077"
-                  alt="Arc Ceramic Vase"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1578500494198-246f612d3b3d?w=600&q=80";
-                  }}
-                />
-              </div>
-              <div className="rounded-2xl overflow-hidden aspect-square shadow-[0_4px_24px_-8px_rgba(0,0,0,0.18)]">
-                <img
-                  src="http://casaamarosa.com/cdn/shop/files/3f6048d6-ac65-4c50-bc1f-1e7cb07563f8.webp?v=1739945721&width=2048"
-                  alt="Smoked Glass Carafe"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600&q=80";
-                  }}
-                />
-              </div>
-            </div>
-            <div className="space-y-4 pt-8">
-              <div className="rounded-2xl overflow-hidden aspect-square shadow-[0_4px_24px_-8px_rgba(0,0,0,0.18)]">
-                <img
-                  src="https://marketbymodernnest.com/cdn/shop/products/EnglishCountry_209_1024x.jpg?v=1678316361"
-                  alt="Brass Desk Lamp"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600&q=80";
-                  }}
-                />
-              </div>
-              <div className="rounded-2xl overflow-hidden aspect-[3/4] shadow-[0_4px_24px_-8px_rgba(0,0,0,0.18)]">
-                <img
-                  src="https://www.linenme.com/sites/default/files/products/08917.jpg"
-                  alt="Linen Throw Blanket"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80";
-                  }}
-                />
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* ── Value Props ──────────────────────────────────────────────────── */}
-      <section className="bg-white border-y border-slate-100">
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8"
-        >
-          {valueProps.map((vp) => (
-            <motion.div
-              key={vp.title}
-              variants={fadeInUp}
-              className="flex items-start gap-4"
-            >
-              <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
-                <vp.icon className="w-5 h-5 text-indigo-600" />
+            {/* Social proof */}
+            <motion.div variants={fadeInUp} className="flex items-center gap-4 mt-10">
+              <div className="flex -space-x-2">
+                {[
+                  "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=40&h=40&fit=crop&crop=face",
+                  "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face",
+                  "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face",
+                ].map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt=""
+                    className="w-8 h-8 rounded-full border-2 border-white object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).style.display = "none";
+                    }}
+                  />
+                ))}
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-slate-900 mb-1">
-                  {vp.title}
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed">
-                  {vp.description}
-                </p>
+                <div className="flex items-center gap-1">
+                  {[1,2,3,4,5].map((s) => (
+                    <Star key={s} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5">Loved by 12,000+ customers</p>
               </div>
-            </motion.div>
-          ))}
-        </motion.div>
-      </section>
-
-      {/* ── Featured Products ────────────────────────────────────────────── */}
-      <section id="products" className="bg-slate-50 py-24 md:py-32">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12"
-          >
-            <div>
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs font-semibold text-indigo-600 uppercase tracking-widest mb-2"
-              >
-                Handpicked for you
-              </motion.p>
-              <motion.h2
-                variants={fadeInUp}
-                className="text-4xl font-bold tracking-tight text-slate-900 text-balance"
-              >
-                Featured Pieces
-              </motion.h2>
-            </div>
-            <motion.div variants={fadeInUp}>
-              <Link
-                href="#products"
-                className="inline-flex items-center gap-1.5 text-sm font-semibold text-indigo-600 hover:text-indigo-700 transition-colors duration-200 group"
-              >
-                View all
-                <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-200" />
-              </Link>
             </motion.div>
           </motion.div>
 
+          {/* Right — hero image grid */}
           <motion.div
             variants={staggerContainer}
             initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+            animate="visible"
+            className="hidden lg:grid grid-cols-2 gap-4"
           >
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
+            {products.slice(0, 4).map((p, i) => (
+              <motion.div
+                key={p.id}
+                variants={scaleIn}
+                className={`rounded-2xl overflow-hidden bg-stone-100 ${
+                  i === 0 ? "row-span-2 aspect-[3/4]" : "aspect-square"
+                }`}
+              >
+                <img
+                  src={p.image}
+                  alt={p.name}
+                  className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://placehold.co/400x400/f1f5f9/94a3b8?text=Image";
+                  }}
+                />
+              </motion.div>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* ── Collections ──────────────────────────────────────────────────── */}
-      <section id="collections" className="bg-white py-24 md:py-32">
+      {/* ── Perks Bar ── */}
+      <section className="bg-white border-y border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {perks.map((perk) => (
+              <div key={perk.title} className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center shrink-0">
+                  <perk.icon className="w-5 h-5 text-indigo-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-slate-900">{perk.title}</p>
+                  <p className="text-xs text-slate-500">{perk.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Products ── */}
+      <section id="products" className="py-20 bg-stone-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Header */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-80px" }}
+            className="text-center mb-12"
+          >
+            <motion.p variants={fadeInUp} className="text-indigo-600 text-sm font-semibold uppercase tracking-widest mb-2">
+              Our Products
+            </motion.p>
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold text-slate-900 mb-4">
+              Curated with care
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-slate-500 max-w-xl mx-auto">
+              Every item in our collection is selected for its quality, design, and the story behind it.
+            </motion.p>
+          </motion.div>
+
+          {/* Category filters */}
+          <div className="flex flex-wrap justify-center gap-2 mb-10">
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setActiveCategory(cat)}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  activeCategory === cat
+                    ? "bg-indigo-600 text-white shadow-sm"
+                    : "bg-white text-slate-600 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600"
+                }`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Grid */}
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-40px" }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredProducts.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onAddToCart={handleAddToCart}
+                onQuickView={setQuickViewProduct}
+              />
+            ))}
+          </motion.div>
+
+          {filteredProducts.length === 0 && (
+            <div className="text-center py-16 text-slate-400">
+              <p className="text-lg">No products in this category yet.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Collections ── */}
+      <section id="collections" className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
-            className="mb-12"
+            className="text-center mb-12"
           >
-            <motion.p
-              variants={fadeInUp}
-              className="text-xs font-semibold text-indigo-600 uppercase tracking-widest mb-2"
-            >
-              Shop by room
+            <motion.p variants={fadeInUp} className="text-indigo-600 text-sm font-semibold uppercase tracking-widest mb-2">
+              Collections
             </motion.p>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-4xl font-bold tracking-tight text-slate-900 text-balance"
-            >
-              Curated Collections
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold text-slate-900">
+              Shop by room
             </motion.h2>
           </motion.div>
 
@@ -584,201 +630,82 @@ export default function HomePage() {
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-40px" }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
-            {collections.map((col, i) => (
-              <motion.div
+            {collections.map((col) => (
+              <motion.a
                 key={col.id}
-                variants={fadeInUp}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className={`relative rounded-2xl overflow-hidden cursor-pointer group ${
-                  i === 0 ? "md:row-span-2 md:col-span-1" : ""
-                }`}
-                style={{
-                  boxShadow:
-                    "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.12)",
-                }}
+                href="#products"
+                variants={scaleIn}
+                className={`group relative rounded-2xl overflow-hidden aspect-[4/3] ${col.accent} flex items-end p-6 cursor-pointer`}
               >
-                <div
-                  className={`relative overflow-hidden ${
-                    i === 0 ? "aspect-[3/4]" : "aspect-[4/3]"
-                  }`}
-                >
-                  <img
-                    src={col.image}
-                    alt={col.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    onError={(e) => {
-                      const fallbacks = [
-                        "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80",
-                        "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800&q=80",
-                        "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&q=80",
-                      ];
-                      (e.currentTarget as HTMLImageElement).src =
-                        fallbacks[i] ?? fallbacks[0];
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6">
-                    <p className="text-xs font-medium text-white/70 mb-1">
-                      {col.count} pieces
-                    </p>
-                    <h3 className="text-xl font-bold text-white leading-tight mb-3">
-                      {col.title}
-                    </h3>
-                    <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-white group-hover:gap-2.5 transition-all duration-200">
-                      Explore
-                      <ArrowRight className="w-4 h-4" />
-                    </span>
+                <img
+                  src={col.image}
+                  alt={col.title}
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="relative">
+                  <p className="text-xs text-white/70 font-medium mb-1">{col.count} products</p>
+                  <h3 className="text-lg font-bold text-white">{col.title}</h3>
+                  <div className="flex items-center gap-1 text-white/80 text-sm mt-1 group-hover:gap-2 transition-all">
+                    Shop now <ChevronRight className="w-4 h-4" />
                   </div>
                 </div>
-              </motion.div>
+              </motion.a>
             ))}
           </motion.div>
         </div>
       </section>
 
-      {/* ── About / Brand Story ──────────────────────────────────────────── */}
-      <section id="about" className="bg-slate-900 py-24 md:py-32 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            {/* Image side */}
-            <motion.div
-              variants={slideInLeft}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-              className="relative"
+      {/* ── Sale Banner ── */}
+      <section className="bg-indigo-600 py-14">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <motion.div
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+          >
+            <motion.p variants={fadeInUp} className="text-indigo-200 text-sm font-semibold uppercase tracking-widest mb-3">
+              Limited Time
+            </motion.p>
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold text-white mb-4">
+              Up to 30% off select items
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-indigo-200 mb-8">
+              Our seasonal sale ends soon. Don't miss out on these curated pieces at exceptional prices.
+            </motion.p>
+            <motion.a
+              variants={fadeInUp}
+              href="#products"
+              className="inline-flex items-center gap-2 px-8 py-3.5 bg-white text-indigo-700 font-semibold rounded-xl hover:bg-indigo-50 active:scale-95 transition-all duration-200 shadow-sm"
             >
-              <div className="rounded-2xl overflow-hidden aspect-[4/3] shadow-[0_8px_48px_-12px_rgba(0,0,0,0.5)]">
-                <img
-                  src="https://artisansaloeuvre.com/wp-content/uploads/2022/01/mf-9004-1024x734.jpg"
-                  alt="Artisan at work in their studio"
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.currentTarget as HTMLImageElement).src =
-                      "https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=800&q=80";
-                  }}
-                />
-              </div>
-              {/* Floating stat card */}
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.3, duration: 0.4, ease: "easeOut" }}
-                className="absolute -bottom-6 -right-6 bg-white rounded-2xl p-5 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.25)]"
-              >
-                <p className="text-3xl font-bold text-slate-900">60+</p>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Independent makers
-                </p>
-                <p className="text-xs text-slate-400">across 18 countries</p>
-              </motion.div>
-            </motion.div>
-
-            {/* Copy side */}
-            <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true, margin: "-80px" }}
-            >
-              <motion.p
-                variants={fadeInUp}
-                className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-4"
-              >
-                Our story
-              </motion.p>
-              <motion.h2
-                variants={fadeInUp}
-                className="text-4xl font-bold tracking-tight text-white text-balance mb-6"
-              >
-                Made by hands that care about what they make.
-              </motion.h2>
-              <motion.p
-                variants={fadeInUp}
-                className="text-slate-400 leading-relaxed mb-4 text-pretty"
-              >
-                {APP_NAME} started with a simple frustration: beautiful,
-                well-made objects were hard to find in one place. We spent two
-                years traveling to studios, workshops, and small factories to
-                find the makers who still do things the slow way.
-              </motion.p>
-              <motion.p
-                variants={fadeInUp}
-                className="text-slate-400 leading-relaxed mb-8 text-pretty"
-              >
-                Today we work with over 60 independent artisans across 18
-                countries. Every product on Lumière has been held, tested, and
-                approved by our team before it reaches your home.
-              </motion.p>
-
-              <motion.div
-                variants={staggerContainer}
-                className="grid grid-cols-2 gap-4 mb-8"
-              >
-                {[
-                  "Vetted by our team in person",
-                  "Fair-trade partnerships",
-                  "Sustainable packaging",
-                  "Carbon-neutral shipping",
-                ].map((item) => (
-                  <motion.div
-                    key={item}
-                    variants={fadeInUp}
-                    className="flex items-center gap-2.5"
-                  >
-                    <div className="w-5 h-5 rounded-full bg-indigo-500/20 flex items-center justify-center shrink-0">
-                      <Check className="w-3 h-3 text-indigo-400" />
-                    </div>
-                    <span className="text-sm text-slate-300">{item}</span>
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <motion.div variants={fadeInUp}>
-                <Link
-                  href="#products"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    document
-                      .querySelector("#products")
-                      ?.scrollIntoView({ behavior: "smooth" });
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all duration-200 shadow-[0_2px_8px_rgba(99,102,241,0.4)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
-                >
-                  Shop the Collection
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </motion.div>
-            </motion.div>
-          </div>
+              Shop the Sale
+              <ArrowRight className="w-4 h-4" />
+            </motion.a>
+          </motion.div>
         </div>
       </section>
 
-      {/* ── Testimonials ─────────────────────────────────────────────────── */}
-      <section className="bg-slate-50 py-24 md:py-32">
+      {/* ── Testimonials ── */}
+      <section className="py-20 bg-stone-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true, margin: "-80px" }}
-            className="text-center mb-14"
+            className="text-center mb-12"
           >
-            <motion.p
-              variants={fadeInUp}
-              className="text-xs font-semibold text-indigo-600 uppercase tracking-widest mb-2"
-            >
-              Customer love
+            <motion.p variants={fadeInUp} className="text-indigo-600 text-sm font-semibold uppercase tracking-widest mb-2">
+              Reviews
             </motion.p>
-            <motion.h2
-              variants={fadeInUp}
-              className="text-4xl font-bold tracking-tight text-slate-900 text-balance"
-            >
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold text-slate-900">
               What our customers say
             </motion.h2>
           </motion.div>
@@ -787,53 +714,37 @@ export default function HomePage() {
             variants={staggerContainer}
             initial="hidden"
             whileInView="visible"
-            viewport={{ once: true, margin: "-80px" }}
+            viewport={{ once: true, margin: "-40px" }}
             className="grid grid-cols-1 md:grid-cols-3 gap-6"
           >
             {testimonials.map((t) => (
               <motion.div
                 key={t.id}
-                variants={scaleIn}
-                whileHover={{ y: -4 }}
-                transition={{ duration: 0.25, ease: "easeOut" }}
-                className="bg-white rounded-2xl p-6 border border-black/5"
-                style={{
-                  boxShadow:
-                    "0 1px 2px rgba(0,0,0,0.04), 0 8px 24px -8px rgba(0,0,0,0.10)",
-                }}
+                variants={fadeInUp}
+                className="bg-white rounded-2xl p-6 shadow-sm flex flex-col"
               >
-                <div className="flex items-center gap-0.5 mb-4">
-                  {Array.from({ length: t.rating }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="w-4 h-4 fill-amber-400 text-amber-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-sm text-slate-700 leading-relaxed mb-5 text-pretty">
+                <StarRating rating={t.rating} />
+                <p className={`mt-4 leading-relaxed flex-1 ${
+                  t.name === "Mara Jensen"
+                    ? "text-lg text-indigo-600"
+                    : "text-sm text-slate-600"
+                }`}>
                   &ldquo;{t.text}&rdquo;
                 </p>
-                <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
-                  <div className="w-9 h-9 rounded-full overflow-hidden bg-indigo-100 shrink-0">
-                    <img
-                      src={t.avatar}
-                      alt={t.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).style.display =
-                          "none";
-                      }}
-                    />
-                  </div>
+                <div className="flex items-center gap-3 mt-5 pt-5 border-t border-slate-100">
+                  <img
+                    src={t.avatar}
+                    alt={t.name}
+                    className="w-10 h-10 rounded-full object-cover bg-stone-100"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLImageElement).src =
+                        "https://placehold.co/40x40/f1f5f9/94a3b8?text=" + t.name[0];
+                    }}
+                  />
                   <div>
-                    <p className="text-sm font-semibold text-slate-900">
-                      {t.name}
-                    </p>
-                    <p className="text-xs text-slate-500">{t.location}</p>
+                    <p className="text-sm font-semibold text-slate-900">{t.name}</p>
+                    <p className="text-xs text-slate-400">{t.location} · {t.product}</p>
                   </div>
-                  <span className="ml-auto text-xs text-indigo-600 font-medium bg-indigo-50 px-2 py-0.5 rounded-full">
-                    {t.product}
-                  </span>
                 </div>
               </motion.div>
             ))}
@@ -841,68 +752,72 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ── CTA Banner ───────────────────────────────────────────────────── */}
-      <section className="bg-indigo-600 py-20 md:py-24 relative overflow-hidden">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            background:
-              "radial-gradient(ellipse 60% 80% at 80% 50%, rgba(255,255,255,0.08) 0%, transparent 70%)",
-          }}
-        />
-        <motion.div
-          variants={staggerContainer}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-80px" }}
-          className="relative max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center"
-        >
-          <motion.h2
-            variants={fadeInUp}
-            className="text-4xl sm:text-5xl font-bold tracking-tight text-white text-balance mb-4"
-          >
-            Your home deserves better.
-          </motion.h2>
-          <motion.p
-            variants={fadeInUp}
-            className="text-indigo-200 text-lg leading-relaxed mb-8 text-pretty"
-          >
-            Join over 4,200 customers who have discovered the difference that
-            thoughtfully made objects bring to everyday life.
-          </motion.p>
+      {/* ── Newsletter ── */}
+      <section className="py-20 bg-white">
+        <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
-            variants={fadeInUp}
-            className="flex flex-wrap items-center justify-center gap-3"
+            variants={staggerContainer}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
           >
-            <Link
-              href="#products"
-              onClick={(e) => {
-                e.preventDefault();
-                document
-                  .querySelector("#products")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="inline-flex items-center gap-2 px-7 py-3.5 bg-white text-indigo-700 font-semibold rounded-xl hover:bg-indigo-50 active:scale-95 transition-all duration-200 shadow-[0_2px_12px_rgba(0,0,0,0.15)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
-            >
-              Shop Now
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="#collections"
-              onClick={(e) => {
-                e.preventDefault();
-                document
-                  .querySelector("#collections")
-                  ?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="inline-flex items-center gap-2 px-7 py-3.5 bg-indigo-700/50 text-white font-semibold rounded-xl border border-white/20 hover:bg-indigo-700/70 active:scale-95 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-indigo-600"
-            >
-              Browse Collections
-            </Link>
+            <motion.div variants={fadeInUp} className="w-12 h-12 rounded-2xl bg-indigo-50 flex items-center justify-center mx-auto mb-5">
+              <Sparkles className="w-6 h-6 text-indigo-600" />
+            </motion.div>
+            <motion.h2 variants={fadeInUp} className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3">
+              Stay in the loop
+            </motion.h2>
+            <motion.p variants={fadeInUp} className="text-slate-500 mb-8">
+              New arrivals, design stories, and exclusive offers — delivered to your inbox.
+            </motion.p>
+
+            {subscribed ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-50 text-emerald-700 font-semibold rounded-xl border border-emerald-200"
+              >
+                <Check className="w-5 h-5" />
+                You're subscribed!
+              </motion.div>
+            ) : (
+              <motion.form
+                variants={fadeInUp}
+                onSubmit={handleSubscribe}
+                className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
+              >
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  required
+                  className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 active:scale-95 transition-all duration-200 text-sm whitespace-nowrap"
+                >
+                  Subscribe
+                </button>
+              </motion.form>
+            )}
+
+            <motion.p variants={fadeInUp} className="text-xs text-slate-400 mt-4">
+              No spam, ever. Unsubscribe at any time.
+            </motion.p>
           </motion.div>
-        </motion.div>
+        </div>
       </section>
-    </main>
+
+      {/* ── Quick View Modal ── */}
+      {quickViewProduct && (
+        <QuickViewModal
+          product={quickViewProduct}
+          onClose={() => setQuickViewProduct(null)}
+          onAddToCart={handleAddToCart}
+        />
+      )}
+    </>
   );
 }
